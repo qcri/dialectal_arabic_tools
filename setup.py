@@ -14,7 +14,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'numpy',
     'Click>=6.0',
-    'keras>=2.0.6',
+    'keras',
     'tensorflow',
     # TODO: put package requirements here
 ]
@@ -57,7 +57,7 @@ setup(
     tests_require=test_requirements,
     setup_requires=setup_requirements,
 
-    dependency_links=['https://github.com/phipleg/keras/tree/crf#egg=crfKeras'],
+    dependency_links=['git+git://github.com/phipleg/keras@crf#egg=keras'],
 # dependency_links = ['git+https://github.com/liamzebedee/scandir.git#egg=scandir-0.1'],
 #     install_requires = ['scandir'],
     install_requires=requirements,
