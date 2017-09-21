@@ -15,6 +15,7 @@ requirements = [
     'numpy',
     'Click>=6.0',
     'keras>=2.0.6',
+    'tensorflow',
     # TODO: put package requirements here
 ]
 
@@ -28,12 +29,12 @@ test_requirements = [
 
 setup(
     name='dialectal_arabic_tools',
-    version='0.1.0',
+    version='0.1.2',
     description="Dialectal Arabic Tools comprises the different modules developed in Qatar Computing Research Institute (QCRI) developed by the ALT team to handle Dialectal Arabic Segmentation, POS tagging, daicrtization and more",
     long_description=readme + '\n\n' + history,
     author="Mohamed Eldesouki",
     author_email='disooqi@gmail.com',
-    url='https://github.com/disooqi/dialectal_arabic_tools',
+    url='https://github.com/qcri/dialectal_arabic_tools',
     packages=find_packages(include=['dialectal_arabic_tools']),
     entry_points={
         'console_scripts': [
@@ -41,22 +42,23 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=requirements,
+
     zip_safe=False,
     keywords='dialectal_arabic_tools',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
     tests_require=test_requirements,
     setup_requires=setup_requirements,
+
+    dependency_links=['https://github.com/phipleg/keras/tree/crf#egg=crfKeras'],
+# dependency_links = ['git+https://github.com/liamzebedee/scandir.git#egg=scandir-0.1'],
+#     install_requires = ['scandir'],
+    install_requires=requirements,
 )
