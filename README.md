@@ -1,1 +1,1 @@
-# dialectal-arabic-tools
+# Dialectal Arabic Tools
