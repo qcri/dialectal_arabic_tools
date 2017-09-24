@@ -1,5 +1,5 @@
 # Dialectal Arabic Tools
-
+Dialectal Arabic Tools comprises the different modules developed in Qatar Computing Research Institute (QCRI) developed by the ALT team to handle Dialectal Arabic Segmentation, POS tagging, Diacritization and more
 
 Dialectal Arabic Tools is compatible with: __Python 2.7-3.5 and later__.
 ## Prerequisites
@@ -17,14 +17,31 @@ You can install Dialectal Arabic Tools by either,
 * clone this repo and and use setup.py
 * use pip   
 
+### Installing Dialectal Arabic Tools from github
+Clone the repo from the github website using the following command:
+```sh
+git clone https://github.com/qcri/dialectal_arabic_tools.git
+```
+Or download the compressed file of the project, extract it, change to the directory and run the following to install the Dialectal Arabic Tools using the following command:
+```sh
+ python setup.py install
+```
+
 ### Installing Dialectal Arabic Tools via pip
 Use the following pash command to install the package from the python index,
 ```sh
-pip install dialectal_Arabic_tools
+pip install dialectal_arabic_tools
 ```
 
 
 ## Publications
+Younes Samih, Mohamed Eldesouki, Mohammed Attia, Kareem Darwish, Ahmed Abdelali, Hamdy Mubarak, Laura Kallmeyer, (2017), [Learning from Relatives: Unified Dialectal Arabic Segmentation](http://www.aclweb.org/anthology/K17-1043), Journal Proceedings of the 21st Conference on Computational Natural Language Learning (CoNLL 2017), Pages 432-441.
+
+Mohamed Eldesouki, Younes Samih, Ahmed Abdelali, Mohammed Attia, Hamdy Mubarak, Kareem Darwish, Kallmeyer Laura, (2017), [Arabic Multi-Dialect Segmentation: bi-LSTM-CRF vs. SVM](https://arxiv.org/pdf/1708.05891.pdf), arXiv preprint arXiv:1708.05891.
+
+Younes Samih, Mohammed Attia, Mohamed Eldesouki, Ahmed Abdelali, Hamdy Mubarak, Laura Kallmeyer, Kareem Darwish, (2017), [A Neural Architecture for Dialectal Arabic Segmentation](http://www.aclweb.org/anthology/W17-1306), Journal Proceedings of the Third Arabic Natural Language Processing Workshop, Pages 46-54.
+
+
 
 
 
