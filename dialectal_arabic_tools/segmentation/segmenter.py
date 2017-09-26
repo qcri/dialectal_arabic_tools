@@ -10,7 +10,7 @@ from keras.layers import Input, Embedding, Dropout, Bidirectional, LSTM, ChainCR
 import pkg_resources
 
 # http://setuptools.readthedocs.io/en/latest/pkg_resources.html#resourcemanager-api
-keras_model = pkg_resources.resource_filename(__name__, "files/seg_keras_model_0922.hdf5")
+keras_model = pkg_resources.resource_filename(__name__, "files/models/seg_keras_model_0922.hdf5")
 # input_file = pkg_resources.resource_filename(__name__, "files/example.in.txt")
 # output_file = pkg_resources.resource_filename(__name__, "files/example.out.txt")
 
