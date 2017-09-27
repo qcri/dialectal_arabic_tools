@@ -6,17 +6,17 @@ Dialectal Arabic Tools is compatible with: __Python 2.7-3.5 and later__.
 
 Before you can use the dialectal Arabic tools you need to install a special version of keras that comprises a CRF layer. Use the following pash command to install it.
 
-It is better to do installations within a virtual environment. 
+It is better to do installations within a virtual environment.
 ```sh
 pip install git+git://github.com/phipleg/keras@crf
-``` 
+```
 
 ## Installation
 
 You can install Dialectal Arabic Tools by either,
 * using pip (recommended)
 * cloning "this" repo and and use setup.py
-  
+
 
 ### Installing Dialectal Arabic Tools via pip
 Use the following pash command to install the package from the python index,
@@ -38,17 +38,17 @@ Or download the compressed file of the project, extract it, change to the direct
 Dialectal Arabic Tools package is pretty easy to use. The following code snippet uses the dialectal segmention module to module a string of Arabic script encoded in ``UTF-8``,
 ```python
 >>> from dialectal_arabic_tools import segmentation
->>> segmentation.segment_text("عنا تنتين بندورة جبلية وخمسة عروقة نعنع بيعملو سلطة .. شلوني معك؟")
+>>> segmentation.segment_text(u"عنا تنتين بندورة جبلية وخمسة عروقة نعنع بيعملو سلطة .. شلوني معك؟")
 'عنا تنتين بندور+ة جبلي+ة و+خمس+ة عروق+ة نعنع ب+يعمل+و سلط+ة شلون+ي مع+ك ؟'
 ```
 
-Furthermore, you could use the segmentation module to segment a text file of Arabic script encoded in ``UTF-8``. Just use ``segment_file`` insted of ``segment_text``. 
+Furthermore, you could use the segmentation module to segment a text file of Arabic script encoded in ``UTF-8``. Just use ``segment_file`` insted of ``segment_text``.
 The ``segment_file`` function requires two two positional parameters, namely the file to be segmented and a file name to generate the output in.
 
 ```python
 >>> from dialectal_arabic_tools import segmentation
 >>> segmentation.segment_file(r'/path/to/text/file/you/need/to/segment.txt', r'output/file/path.txt')
-``` 
+```
 
 
 ## Publications
