@@ -6,7 +6,8 @@ Dialectal Arabic Tools is compatible with: __Python 2.7-3.5 and later__.
 
 Before you can use the dialectal Arabic tools you need to install a special version of keras that comprises a CRF layer. Use the following pash command to install it.
 
-It is better to do installations within a virtual environment.
+It is better to do installations within a virtual environment. The following web page shows
+<a href="https://disooqi.github.io/blog/py-virtual-environment.html">how to create a virtual environment in a straightforward steps</a>.
 ```sh
 pip install git+git://github.com/phipleg/keras@crf
 ```
