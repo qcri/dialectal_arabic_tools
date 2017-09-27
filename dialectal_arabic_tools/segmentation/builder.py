@@ -3,6 +3,7 @@ import codecs
 import numpy as np
 from collections import Counter
 from itertools import chain
+from sklearn.model_selection import train_test_split
 from keras.models import Model
 from keras.preprocessing import sequence
 from keras.layers.wrappers import TimeDistributed
@@ -34,7 +35,7 @@ class SegmentationModel(object):
         self.segmentation_model = None
 
     def train(self, model_file_name='./files/models/dialectal_segmenter.hdf5'):
-        early_stopping = EarlyStopping(patience=1, verbose=1)
+        early_stopping = EarlyStopping(patience=10, verbose=1)
         checkpointer = ModelCheckpoint(model_file_name, verbose=1, save_best_only=True)
         self.segmentation_model.fit(self.X_train, self.y_train,
                  batch_size=self.batch_size,
@@ -60,7 +61,30 @@ class SegmentationModel(object):
         elif dataset_format == 'plain':
             pass
 
-    def load_dataset(self, train_data_path, dev_data_path, test_data_path, dataset_format='conll'):
+    def load_and_split(self, dataset_format, dataset, dev_size=0.2, shuffle=True):
+        if self.check_format(dataset_format, dataset):
+            self.dataset_format = dataset_format
+
+        X_ch, y_ch = self.process_files(dataset, self.dataset_format)
+
+        self.index2word = self._fit_term_index(X_ch, reserved=['<PAD>', '<UNK>'])
+        self.word2index = self._invert_index(self.index2word)
+
+        self.index2pos = self.SEG_TAGS
+        pos2index = self._invert_index(self.index2pos)
+
+        X_idx = np.array([[self.word2index[w] for w in words] for words in X_ch])
+        y_idx = np.array([[pos2index[t] for t in pos_tags] for pos_tags in y_ch])
+
+
+
+        X = sequence.pad_sequences(X_idx, maxlen=50, padding='post')
+        y_train = sequence.pad_sequences(y_idx, maxlen=50, padding='post')
+        y = np.expand_dims(y_train, -1)
+
+        self.X_train, self.X_dev, self.y_train, self.y_dev = train_test_split(X, y, test_size=dev_size, shuffle=shuffle)
+
+    def load_dataset_splits(self, train_data_path, dev_data_path, test_data_path, dataset_format='conll'):
         # todo
         if self.check_format(dataset_format, self.train_path, self.dev_path, self.test_path):
             self.train_path = train_data_path
@@ -178,7 +202,8 @@ class SegmentationModel(object):
 
 if __name__ == '__main__':
     model = SegmentationModel()
-    model.load_dataset(r'dev_data/all_train_f01.txt', r'dev_data/all_dev_f01.txt', r'dev_data/all_test_f01.txt')
+    model.load_and_split('conll', r'dev_data/all.trg.conll', dev_size=0.05)
+    # model.load_dataset_splits(r'dev_data/all_train_f01.txt', r'dev_data/all_dev_f01.txt', r'dev_data/all_test_f01.txt')
     model.build_model()
     model.train()
     # print(model)
