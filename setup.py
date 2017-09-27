@@ -16,6 +16,7 @@ requirements = [
     'Click>=6.0',
     'tensorflow',
     'h5py',
+    'sklearn',
     # TODO: put package requirements here
 ]
 
