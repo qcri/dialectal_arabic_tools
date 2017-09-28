@@ -10,9 +10,9 @@ from keras.layers import Input, Embedding, Dropout, Bidirectional, LSTM, ChainCR
 import pkg_resources
 
 # http://setuptools.readthedocs.io/en/latest/pkg_resources.html#resourcemanager-api
-keras_model = pkg_resources.resource_filename(__name__, "data/seg_keras_model_0922.hdf5")
-# input_file = pkg_resources.resource_filename(__name__, "data/example.in.txt")
-# output_file = pkg_resources.resource_filename(__name__, "data/example.out.txt")
+keras_model = pkg_resources.resource_filename(__name__, "files/models/segmenter.hdf5")
+# input_file = pkg_resources.resource_filename(__name__, "files/example.in.txt")
+# output_file = pkg_resources.resource_filename(__name__, "files/example.out.txt")
 
 
 __author__ = 'disooqi'
@@ -21,7 +21,7 @@ __created__ = '21 Sep 2017'
 parser = argparse.ArgumentParser(description="Segmentation module for the Dialectal Arabic")
 group = parser.add_mutually_exclusive_group()
 # file related options
-parser.add_argument("-d", "--data-dir", help="directory containing train, test and dev file [default: %(default)s]")
+parser.add_argument("-d", "--files-dir", help="directory containing train, test and dev file [default: %(default)s]")
 parser.add_argument("-g", "--log-file", dest="log_file", help="log file [default: %(default)s]")
 parser.add_argument("-p", "--model-file", dest="model_file",
                     help="directory to save the best models [default: %(default)s]")
@@ -54,11 +54,11 @@ parser.add_argument('-m', '--mode',
 
 parser.set_defaults(
     # file
-    data_dir="data/",
+    data_dir="files/",
     model_file=keras_model,
-    # train_set="./data/all_train_f01.txt",
-    # validation_set="./data/all_dev_f01.txt",
-    # test_set="./data/all_test_f01.txt",
+    # train_set="./files/all_train_f01.txt",
+    # validation_set="./files/all_dev_f01.txt",
+    # test_set="./files/all_test_f01.txt",
     log_file="run.log",
     # input_file=input_file,
     # output_file=output_file,

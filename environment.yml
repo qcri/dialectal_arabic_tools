@@ -30,7 +30,6 @@ dependencies:
   - cryptography==2.0.3
   - cycler==0.10.0
   - decorator==4.1.2
-  - dialectal-arabic-tools==0.1.0
   - docutils==0.14
   - entrypoints==0.2.3
   - flake8==3.4.1
@@ -51,7 +50,6 @@ dependencies:
   - jupyter-client==5.1.0
   - jupyter-console==5.2.0
   - jupyter-core==4.3.0
-  - keras==2.0.8
   - markdown==2.6.9
   - markupsafe==1.0
   - matplotlib==2.0.2
