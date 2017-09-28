@@ -1,7 +1,9 @@
 # Dialectal Arabic Tools
 Dialectal Arabic Tools comprises the different modules developed in Qatar Computing Research Institute (QCRI) developed by the ALT team to handle Dialectal Arabic Segmentation, POS tagging, Diacritization and more
 
-Dialectal Arabic Tools is compatible with: __Python 2.7-3.5 and later__.
+The segmentation module of Dialectal Arabic Tools 
+ 
+Dialectal Arabic Tools is compatible with: __Python 2.7-3.5 or later__.
 ## Prerequisites
 
 Before you can use the dialectal Arabic tools you need to install a special version of keras that comprises a CRF layer. Use the following pash command to install it.
@@ -35,7 +37,7 @@ Or download the compressed file of the project, extract it, change to the direct
 ```
 
 ## Getting started
-Dialectal Arabic Tools package is pretty easy to use. The following code snippet uses the dialectal segmention module to module a string of Arabic script encoded in ``UTF-8``,
+Dialectal Arabic Tools package is pretty easy to use. The following code snippets uses the dialectal segmention module to module a string of Arabic script encoded in ``UTF-8``,
 ```python
 >>> from dialectal_arabic_tools import segmentation
 >>> segmentation.segment_text("عنا تنتين بندورة جبلية وخمسة عروقة نعنع بيعملو سلطة .. شلوني معك؟")
