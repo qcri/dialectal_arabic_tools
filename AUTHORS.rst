@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Mohamed Eldesouki <disooqi@gmail.com>
+* Ahmed Abdelali <>
 
 Contributors
 ------------
