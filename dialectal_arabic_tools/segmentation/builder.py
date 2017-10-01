@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import os
 import codecs
 import numpy as np
 from collections import Counter
@@ -34,9 +35,10 @@ class SegmentationModel(object):
 
         self.segmentation_model = None
 
-    def train(self, model_file_name='./files/models/dialectal_segmenter.hdf5'):
+    def train(self, model_file_path, model_file_name):
+        model_abs_file = os.path.join(model_file_path, model_file_name)
         early_stopping = EarlyStopping(patience=10, verbose=1)
-        checkpointer = ModelCheckpoint(model_file_name, verbose=1, save_best_only=True)
+        checkpointer = ModelCheckpoint(model_abs_file, verbose=1, save_best_only=True)
         self.segmentation_model.fit(self.X_train, self.y_train,
                  batch_size=self.batch_size,
                  epochs=self.epoches,
@@ -140,12 +142,10 @@ class SegmentationModel(object):
         dense = TimeDistributed(Dense(len(self.index2pos)))(bilstm_d)
         crf = ChainCRF()
         crf_output = crf(dense)
-        model = Model(inputs=[word_input], outputs=[crf_output])
-        model.compile(loss=crf.sparse_loss,
+        self.segmentation_model = Model(inputs=[word_input], outputs=[crf_output])
+        self.segmentation_model.compile(loss=crf.sparse_loss,
                       optimizer=optimizer,
                       metrics=['sparse_categorical_accuracy'])
-
-        self.segmentation_model = model
 
     def _fit_term_index(self, terms, reserved=[], preprocess=lambda x: x):
         # todo I need to know that this is working well
@@ -201,9 +201,12 @@ class SegmentationModel(object):
 
 
 if __name__ == '__main__':
-    model = SegmentationModel()
-    model.load_and_split('conll', r'dev_data/all.trg.conll', dev_size=0.05)
-    # model.load_dataset_splits(r'dev_data/all_train_f01.txt', r'dev_data/all_dev_f01.txt', r'dev_data/all_test_f01.txt')
-    model.build_model()
-    model.train()
+    model3 = SegmentationModel()
+    # model.load_and_split('conll', r'files/dataset/joint/all.trg.conll', dev_size=0.05)
+    model3.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
+                              r'files/dataset/joint/joint.dev.3',
+                              r'files/dataset/joint/joint.test.3')
+    model3.build_model(nb_epoch=100)
+    model3.train(model_file_path=r'./files/models',model_file_name=r'joint.seg.fold03.hdf5')
     # print(model)
+
