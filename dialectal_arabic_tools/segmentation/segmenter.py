@@ -6,7 +6,7 @@ from itertools import chain
 import numpy as np
 from keras.models import load_model
 from keras.preprocessing import sequence
-from keras.layers import Input, Embedding, Dropout, Bidirectional, LSTM, ChainCRF, Dense, TimeDistributed
+from keras.layers.crf import create_custom_objects
 import pkg_resources
 
 # http://setuptools.readthedocs.io/en/latest/pkg_resources.html#resourcemanager-api
@@ -175,26 +175,13 @@ def segment_file(infile, outfile, dl_model=keras_model):
 
 
 def __segment__(X_chars, dl_model=keras_model):
-    embeddings = build_embeddings(args.max_features)
+    # embeddings = build_embeddings(args.max_features)
     X_idxs = np.array([[word2index.get(w, word2index['<UNK>']) for w in words] for words in X_chars])
     X_idxs_padded = sequence.pad_sequences(X_idxs, maxlen=args.maxlen, padding='post')
 
-    word_input = Input(shape=(args.maxlen,), dtype='int32', name='word_input')
-    word_emb = Embedding(embeddings.shape[0], args.word_embedding_dim, input_length=args.maxlen, name='word_emb',
-                         weights=[embeddings])(word_input)
-    word_emb_d = Dropout(0.5)(word_emb)
-    bilstm = Bidirectional(LSTM(args.lstm_dim, return_sequences=True))(word_emb_d)
-    bilstm_d = Dropout(0.5)(bilstm)
-    dense = TimeDistributed(Dense(args.nb_pos_tags))(bilstm_d)
-    crf = ChainCRF()
-    crf_output = crf(dense)
-    model = load_model(dl_model,
-                       custom_objects={'ChainCRF': ChainCRF, 'sparse_loss': crf.sparse_loss}, compile=False)
-    model.compile(loss=crf.sparse_loss, optimizer='adam', metrics=['sparse_categorical_accuracy'])
+    model = load_model(dl_model, custom_objects=create_custom_objects())
 
     return model.predict(X_idxs_padded, args.batch_size, verbose=0)
-
-
 
 
 if '__name__' == '__main__':
