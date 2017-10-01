@@ -81,6 +81,33 @@ __author__ = 'disooqi'
 #     return train_test_split(X, y, test_size=test_size, shuffle=shuffle)
 
 
+def convert_to_conll(text):
+    conll_lines = list()
+    tokens = text.strip().split()
+    for tok in tokens:
+        if tok.strip() in ['EOS', 'EOTWEET']:
+            conll_lines.append('\n')
+            continue
+        clitics = tok.strip().split('+')
+        for clitic in clitics:
+            if len(clitic) == 1:
+                conll_lines.append(clitic + '\tS\n')
+            elif len(clitic) == 2:
+                conll_lines.append(clitic[0] + '\tB\n')
+                conll_lines.append(clitic[1] + '\tE\n')
+            else:
+                conll_lines.append(clitic[0] + '\tB\n')
+                for ch in clitic[1:-1]:
+                    conll_lines.append(ch + '\tM\n')
+                else:
+                    conll_lines.append(clitic[-1] + '\tE\n')
+        else:
+            conll_lines.append('WB\tWB\n')
+
+    return conll_lines
+
+
+
 def from_plain_to_conll(dir_path):
     rootDir = dir_path
     for dirName, subdirList, fileList in os.walk(rootDir):
@@ -91,22 +118,34 @@ def from_plain_to_conll(dir_path):
                     if 'train' in fname and str(i) in fname:
                         with codecs.open(os.path.join(dirName, fname), encoding='utf-8') as rObj:
                             for line in rObj:
-                                #                             print line
-                                jointObj.write(line)
+                                conll_lines = convert_to_conll(line)
+                                for conll_line in conll_lines:
+                                    jointObj.write(conll_line)
+                else:
+                    jointObj.write('\n')
+
 
             with codecs.open('joint.dev.' + str(i), encoding='utf-8', mode='w') as jointObj:
                 for fname in fileList:
                     if 'dev' in fname and str(i) in fname:
                         with codecs.open(os.path.join(dirName, fname), encoding='utf-8') as rObj:
                             for line in rObj:
-                                jointObj.write(line)
+                                conll_lines = convert_to_conll(line)
+                                for conll_line in conll_lines:
+                                    jointObj.write(conll_line)
+                else:
+                    jointObj.write('\n')
 
             with codecs.open('joint.test.' + str(i), encoding='utf-8', mode='w') as jointObj:
                 for fname in fileList:
                     if 'test' in fname and str(i) in fname:
                         with codecs.open(os.path.join(dirName, fname), encoding='utf-8') as rObj:
                             for line in rObj:
-                                jointObj.write(line)
+                                conll_lines = convert_to_conll(line)
+                                for conll_line in conll_lines:
+                                    jointObj.write(conll_line)
+                else:
+                    jointObj.write('\n')
         else:
             break
 
