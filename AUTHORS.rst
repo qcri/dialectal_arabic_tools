@@ -4,10 +4,10 @@ Credits
 
 Development Lead
 ----------------
-
-* Ahmed Abdelali <>
+*  Mohamed Eldesouki <disooqi@gmail.com>
 
 Contributors
 ------------
-
-* Mohamed Eldesouki <disooqi@gmail.com>
+* Ahmed Abdelali
+* Kareem Darwish
+* Younes Samih
