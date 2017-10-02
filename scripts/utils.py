@@ -106,9 +106,21 @@ def convert_to_conll(text):
 
     return conll_lines
 
-
-
 def from_plain_to_conll(dir_path):
+    rootDir = dir_path
+    for dirName, subdirList, fileList in os.walk(rootDir):
+        print('Found directory: %s' % dirName)
+        for filename in fileList:
+            file_path = os.path.join(dirName, os.path.splitext(filename)[0]+'.conll')
+            with codecs.open(file_path, encoding='utf-8', mode='w') as jointObj:
+                with codecs.open(os.path.join(dirName, filename), encoding='utf-8') as rObj:
+                    for line in rObj:
+                        conll_lines = convert_to_conll(line)
+                        for conll_line in conll_lines:
+                            jointObj.write(conll_line)
+
+
+def build_join_data(dir_path):
     rootDir = dir_path
     for dirName, subdirList, fileList in os.walk(rootDir):
         print('Found directory: %s' % dirName)
@@ -151,6 +163,6 @@ def from_plain_to_conll(dir_path):
 
 
 if __name__ == '__main__':
-    from_plain_to_conll(r'/home/disooqi/Dropbox/most_cited/all_data/joint')
+    from_plain_to_conll(r'../dialectal_arabic_tools/segmentation/files/dataset/egygg')
     # split = split_dataset(r'../files/all.trg.conll')
     # print(len(split))
