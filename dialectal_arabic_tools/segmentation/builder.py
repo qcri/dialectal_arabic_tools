@@ -5,11 +5,12 @@ import numpy as np
 from collections import Counter
 from itertools import chain
 from sklearn.model_selection import train_test_split
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.preprocessing import sequence
 from keras.layers.wrappers import TimeDistributed
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import Input, Dense, Embedding, LSTM, Bidirectional, Dropout, ChainCRF
+from keras.layers.crf import create_custom_objects
 
 
 class SegmentationModel(object):
@@ -86,17 +87,15 @@ class SegmentationModel(object):
 
         self.X_train, self.X_dev, self.y_train, self.y_dev = train_test_split(X, y, test_size=dev_size, shuffle=shuffle)
 
-    def load_dataset_splits(self, train_data_path, dev_data_path, test_data_path, dataset_format='conll'):
+    def load_dataset_splits(self, train_data_path, dev_data_path, dataset_format='conll'):
         # todo
         if self.check_format(dataset_format, self.train_path, self.dev_path, self.test_path):
             self.train_path = train_data_path
             self.dev_path = dev_data_path
-            self.test_path = test_data_path
             self.dataset_format = dataset_format
 
         X_train_ch, y_train_ch = self.process_files(self.train_path, self.dataset_format)
         X_dev_ch, y_dev_ch = self.process_files(self.dev_path, self.dataset_format)
-        X_test_ch, y_test_ch = self.process_files(self.test_path, self.dataset_format)
 
         self.index2word = self._fit_term_index(X_train_ch, reserved=['<PAD>', '<UNK>'])
         self.word2index = self._invert_index(self.index2word)
@@ -110,20 +109,15 @@ class SegmentationModel(object):
         X_dev_idx = np.array([[self.word2index.get(w, self.word2index['<UNK>']) for w in words] for words in X_dev_ch])
         y_dev_idx = np.array([[pos2index[t] for t in pos_tags] for pos_tags in y_dev_ch])
 
-        X_test_idx = np.array([[self.word2index.get(w, self.word2index['<UNK>']) for w in words] for words in X_test_ch])
-        y_test_idx = np.array([[pos2index[t] for t in pos_tags] for pos_tags in y_test_ch])
 
         self.X_train = sequence.pad_sequences(X_train_idx, maxlen=self.maxlen, padding='post')
         self.X_dev = sequence.pad_sequences(X_dev_idx, maxlen=self.maxlen, padding='post')
-        self.X_test = sequence.pad_sequences(X_test_idx, maxlen=self.maxlen, padding='post')
 
         # todo maxlen should be calculated automatically
         y_train = sequence.pad_sequences(y_train_idx, maxlen=self.maxlen, padding='post')
         self.y_train = np.expand_dims(y_train, -1)
         y_dev = sequence.pad_sequences(y_dev_idx, maxlen=self.maxlen, padding='post')
         self.y_dev = np.expand_dims(y_dev, -1)
-        y_test = sequence.pad_sequences(y_test_idx, maxlen=self.maxlen, padding='post')
-        self.y_test = np.expand_dims(y_test, -1)
 
     def build_model(self,  word_embedding_dim=200, lstm_dim=100, batch_size=10, nb_epoch=1, optimizer='adam'):
         self.lstm_dim = lstm_dim
@@ -158,11 +152,14 @@ class SegmentationModel(object):
     def _invert_index(self, id2term):
         return {term: i for i, term in enumerate(id2term)}
 
-    @classmethod
-    def process_conll_file(cls, file_path):
+    @staticmethod
+    def process_conll_file(file_path):
         with codecs.open(file_path, encoding='utf-8') as conell:
             list_of_lines = [line.strip().split() for line in conell if len(line.strip().split()) == 2]
-            chars, targets = list(zip(*list_of_lines))
+            try:
+                chars, targets = list(zip(*list_of_lines))
+            except ValueError as e:
+                print()
             words = ''.join(chars).split('WB')
             target_of_words = ''.join(targets).split('WB')
 
@@ -171,17 +168,41 @@ class SegmentationModel(object):
 
             return words, target_of_words
 
-    def evaluate(self, file_path):
-        if self.check_format(file_path, self.dataset_format):
-            pass
-        # scores_test = model.evaluate(self.X_test, self.y_test,batch_size=100)
-        # print("Accuracy for test: ",scores_test[1])
-        #
-        # scores_dev = model.evaluate(self.X_dev, self.y_dev, batch_size=100)
-        # print("Accuracy for dev: ", scores_dev[1])
-        # #
-        # scores_train = model.evaluate(self.X_train, self.y_train, batch_size=100)
-        # print("Accuracy for train: ", scores_train[1])
+    @staticmethod
+    def computeWordLevelAccuracy(y_true, y_pred, mapping):
+        '''
+        The function is acquired from Kareem Darwish Repo
+        https://github.com/kdarwish/DialectalPOSTagger/blob/master/Training%20and%20Test%20Scripts%20-%20Python%203.5.ipynb
+        :param y_true:
+        :param y_pred:
+        :param mapping: idx2Label
+        :return:
+        '''
+        y_true_word = []
+        y_pred_word = []
+        tokenTrue = ''
+        tokenPred = ''
+        correct = 0
+        total = 0
+        for i in range(len(y_true)):
+            if mapping[y_true[i]] == 'WB':
+                y_true_word.append(tokenTrue)
+                y_pred_word.append(tokenPred)
+                if len(tokenTrue) > 0:
+                    if tokenTrue == tokenPred:
+                        correct += 1
+                    total += 1
+                    tokenTrue = ''
+                    tokenPred = ''
+            elif mapping[y_true[i]] == 'EOS':
+                continue
+            else:
+                if len(tokenTrue) > 0:
+                    tokenTrue += '+'
+                    tokenPred += '+'
+                tokenTrue += mapping[y_true[i]]
+                tokenPred += mapping[y_pred[i]]
+        return correct / total, np.array(y_true_word), np.array(y_pred_word)
 
     @classmethod
     def check_format(cls, dataset_format, *file_path):
@@ -199,14 +220,134 @@ class SegmentationModel(object):
         one_hot_targets = np.eye(self.embedding_dim)[targets]
         return one_hot_targets
 
+    def predict(self, file_path):
+        X_test_ch, y_test_ch = self.process_files(file_path, self.dataset_format)
+        X_idxs = np.array([[self.word2index.get(w, self.word2index['<UNK>']) for w in words] for words in X_test_ch])
+
+        X_idxs_padded = sequence.pad_sequences(X_idxs, maxlen=self.maxlen, padding='post')
+        return self.segmentation_model.predict(X_idxs_padded)
+
+    def evaluate(self, testdata_dic):
+        for dialect, test_path in testdata_dic.items():
+            X_test_ch, y_test_ch = self.process_files(test_path, self.dataset_format)
+            X_idxs = np.array([[self.word2index.get(w, self.word2index['<UNK>']) for w in words] for words in X_test_ch])
+
+            X_idxs_padded = sequence.pad_sequences(X_idxs, maxlen=self.maxlen, padding='post')
+            y_pred = self.segmentation_model.predict(X_idxs_padded)
+            total, correct = 0, 0
+            w_total, w_correct = 0, 0
+            for pred, trg in zip(np.argmax(y_pred, axis=2), y_test_ch):
+                isCorrect = True
+                for est, act in zip(pred, trg):
+                    if self.index2pos[est] != act:
+                        isCorrect = False
+                    else:
+                        correct += 1
+                    total += 1
+                if isCorrect == True:
+                    w_correct += 1
+                w_total += 1
+            '''
+                # assert len(pred) >= len(trg)
+                w_correct += 1
+                for est, act in zip(pred, trg):
+                    if self.index2pos[est] == act:
+                        correct += 1
+                    else:
+                        w_correct -= 1
+                    total += 1
+                else:
+                    w_total += 1
+            '''
+            print('For {} dialect, char-based segmentation is {} and word-based is {}.'.format(dialect, correct/total, w_correct/w_total))
+
+        # scores_test = model.evaluate(self.X_test, self.y_test,batch_size=100)
+        # print("Accuracy for test: ",scores_test[1])
+        #
+        # scores_dev = model.evaluate(self.X_dev, self.y_dev, batch_size=100)
+        # print("Accuracy for dev: ", scores_dev[1])
+        # #
+        # scores_train = model.evaluate(self.X_train, self.y_train, batch_size=100)
+        # print("Accuracy for train: ", scores_train[1])
+
+
 
 if __name__ == '__main__':
-    model3 = SegmentationModel()
-    # model.load_and_split('conll', r'files/dataset/joint/all.trg.conll', dev_size=0.05)
-    model3.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
-                              r'files/dataset/joint/joint.dev.3',
-                              r'files/dataset/joint/joint.test.3')
-    model3.build_model(nb_epoch=100)
-    model3.train(model_file_path=r'./files/models',model_file_name=r'joint.seg.fold03.hdf5')
+    print('Fold 1 evaluation:')
+    fold01_joint_model = SegmentationModel()
+    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.1',
+                                                r'files/dataset/joint/joint.dev.1')
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold01.hdf5', custom_objects=create_custom_objects())
+
+    test_data_dict = {'egy': r'./files/dataset/egy/data_1.test.conll',
+                      'mor':r'./files/dataset/mor/mdata_1.test.conll',
+                      'lev': r'./files/dataset/lev/lev_testfold_01.conll',
+                      'glf':'./files/dataset/glf/glf_testfold_01.conll'}
+    fold01_joint_model.evaluate(test_data_dict)
+    print('\n\nFold 2 evaluation:')
+    fold01_joint_model = SegmentationModel()
+    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.2',
+                                           r'files/dataset/joint/joint.dev.2')
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold02.hdf5',
+                                                       custom_objects=create_custom_objects())
+
+    test_data_dict = {'egy': r'./files/dataset/egy/data_2.test.conll',
+                      'mor': r'./files/dataset/mor/mdata_2.test.conll',
+                      'lev': r'./files/dataset/lev/lev_testfold_02.conll',
+                      'glf': r'./files/dataset/glf/glf_testfold_02.conll'}
+    fold01_joint_model.evaluate(test_data_dict)
+
+    print('\n\nFold 3 evaluation:')
+    fold01_joint_model = SegmentationModel()
+    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
+                                           r'files/dataset/joint/joint.dev.3')
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold03.hdf5',
+                                                       custom_objects=create_custom_objects())
+
+    test_data_dict = {'egy': r'./files/dataset/egy/data_3.test.conll',
+                      'mor': r'./files/dataset/mor/mdata_3.test.conll',
+                      'lev': r'./files/dataset/lev/lev_testfold_03.conll',
+                      'glf': r'./files/dataset/glf/glf_testfold_03.conll'}
+    fold01_joint_model.evaluate(test_data_dict)
+
+    print('\n\nFold 4 evaluation:')
+    fold01_joint_model = SegmentationModel()
+    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.4',
+                                           r'files/dataset/joint/joint.dev.4')
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold04.hdf5',
+                                                       custom_objects=create_custom_objects())
+
+    test_data_dict = {'egy': r'./files/dataset/egy/data_4.test.conll',
+                      'mor': r'./files/dataset/mor/mdata_4.test.conll',
+                      'lev': r'./files/dataset/lev/lev_testfold_04.conll',
+                      'glf': r'./files/dataset/glf/glf_testfold_04.conll'}
+    fold01_joint_model.evaluate(test_data_dict)
+
+    print('\n\nFold 5 evaluation:')
+    fold01_joint_model = SegmentationModel()
+    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.5',
+                                           r'files/dataset/joint/joint.dev.5')
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold05.hdf5',
+                                                       custom_objects=create_custom_objects())
+
+    test_data_dict = {'egy': r'./files/dataset/egy/data_5.test.conll',
+                      'mor': r'./files/dataset/mor/mdata_5.test.conll',
+                      'lev': r'./files/dataset/lev/lev_testfold_05.conll',
+                      'glf': r'./files/dataset/glf/glf_testfold_05.conll'}
+    fold01_joint_model.evaluate(test_data_dict)
+
+
+
+
+
+
+
+    # model3 = SegmentationModel()
+    # # model.load_and_split('conll', r'files/dataset/joint/all.trg.conll', dev_size=0.05)
+    # model3.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
+    #                           r'files/dataset/joint/joint.dev.3',
+    #                           r'files/dataset/joint/joint.test.3')
+    # model3.build_model(nb_epoch=100)
+    # model3.train(model_file_path=r'./files/models',model_file_name=r'joint.seg.fold03.hdf5')
     # print(model)
 
