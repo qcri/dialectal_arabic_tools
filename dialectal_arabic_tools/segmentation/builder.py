@@ -15,7 +15,7 @@ from keras.layers.crf import create_custom_objects
 
 class SegmentationModel(object):
     formats = ('conll', 'plain')
-    SEG_TAGS = ('S', 'B', 'E', 'M')
+    SEG_TAGS = ('F', 'S', 'B', 'E', 'M')
 
     def __init__(self, len_of_longest_word=50):
         self.embeddings = None
@@ -156,12 +156,18 @@ class SegmentationModel(object):
     def process_conll_file(file_path):
         with codecs.open(file_path, encoding='utf-8') as conell:
             list_of_lines = [line.strip().split() for line in conell if len(line.strip().split()) == 2]
-            try:
-                chars, targets = list(zip(*list_of_lines))
-            except ValueError as e:
-                print()
-            words = ''.join(chars).split('WB')
-            target_of_words = ''.join(targets).split('WB')
+            chars, targets = list(zip(*list_of_lines))
+
+
+            words = ''.join(chars).replace('WB','F ').split()
+            for w in words:
+                if not w.endswith('F'):
+                    # todo through an exception
+                    print(w)
+            target_of_words = ''.join(targets).replace('WB','F ').split()
+            for trg in target_of_words:
+                if not trg.endswith('F'):
+                    print(trg)
 
             words = [tuple(word) for word in words]
             target_of_words = [tuple(trg) for trg in target_of_words]
@@ -273,68 +279,124 @@ class SegmentationModel(object):
 
 
 if __name__ == '__main__':
+    # model01 = SegmentationModel()
+    # model01.load_dataset_splits(r'files/dataset/joint/joint.trian.1',
+    #                           r'files/dataset/joint/joint.dev.1')
+    # model01.build_model(nb_epoch=100)
+    # model01.train(model_file_path=r'./files/models', model_file_name=r'joint06.hdf5')
+    #
+    # model02 = SegmentationModel()
+    # model02.load_dataset_splits(r'files/dataset/joint/joint.trian.2',
+    #                             r'files/dataset/joint/joint.dev.2')
+    # model02.build_model(nb_epoch=100)
+    # model02.train(model_file_path=r'./files/models', model_file_name=r'joint07.hdf5')
+    #
+    # model03 = SegmentationModel()
+    # model03.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
+    #                             r'files/dataset/joint/joint.dev.3')
+    # model03.build_model(nb_epoch=100)
+    # model03.train(model_file_path=r'./files/models', model_file_name=r'joint08.hdf5')
+    #
+    # model04 = SegmentationModel()
+    # model04.load_dataset_splits(r'files/dataset/joint/joint.trian.4',
+    #                             r'files/dataset/joint/joint.dev.4')
+    # model04.build_model(nb_epoch=100)
+    # model04.train(model_file_path=r'./files/models', model_file_name=r'joint09.hdf5')
+    #
+    # model05 = SegmentationModel()
+    # model05.load_dataset_splits(r'files/dataset/joint/joint.trian.5',
+    #                             r'files/dataset/joint/joint.dev.5')
+    # model05.build_model(nb_epoch=100)
+    # model05.train(model_file_path=r'./files/models', model_file_name=r'joint10.hdf5')
+
     print('Fold 1 evaluation:')
     fold01_joint_model = SegmentationModel()
     fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.1',
                                                 r'files/dataset/joint/joint.dev.1')
-    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold01.hdf5', custom_objects=create_custom_objects())
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint06.hdf5', custom_objects=create_custom_objects())
 
     test_data_dict = {'egy': r'./files/dataset/egy/data_1.test.conll',
                       'mor':r'./files/dataset/mor/mdata_1.test.conll',
                       'lev': r'./files/dataset/lev/lev_testfold_01.conll',
                       'glf':'./files/dataset/glf/glf_testfold_01.conll'}
     fold01_joint_model.evaluate(test_data_dict)
-    print('\n\nFold 2 evaluation:')
+
+    print('Fold 2 evaluation:')
     fold01_joint_model = SegmentationModel()
     fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.2',
                                            r'files/dataset/joint/joint.dev.2')
-    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold02.hdf5',
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint07.hdf5',
                                                        custom_objects=create_custom_objects())
 
     test_data_dict = {'egy': r'./files/dataset/egy/data_2.test.conll',
                       'mor': r'./files/dataset/mor/mdata_2.test.conll',
                       'lev': r'./files/dataset/lev/lev_testfold_02.conll',
-                      'glf': r'./files/dataset/glf/glf_testfold_02.conll'}
+                      'glf': './files/dataset/glf/glf_testfold_02.conll'}
     fold01_joint_model.evaluate(test_data_dict)
 
-    print('\n\nFold 3 evaluation:')
+    print('Fold 3 evaluation:')
     fold01_joint_model = SegmentationModel()
     fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
                                            r'files/dataset/joint/joint.dev.3')
-    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold03.hdf5',
+    fold01_joint_model.segmentation_model = load_model(r'files/models/joint08.hdf5',
                                                        custom_objects=create_custom_objects())
 
     test_data_dict = {'egy': r'./files/dataset/egy/data_3.test.conll',
                       'mor': r'./files/dataset/mor/mdata_3.test.conll',
                       'lev': r'./files/dataset/lev/lev_testfold_03.conll',
-                      'glf': r'./files/dataset/glf/glf_testfold_03.conll'}
+                      'glf': './files/dataset/glf/glf_testfold_03.conll'}
     fold01_joint_model.evaluate(test_data_dict)
-
-    print('\n\nFold 4 evaluation:')
-    fold01_joint_model = SegmentationModel()
-    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.4',
-                                           r'files/dataset/joint/joint.dev.4')
-    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold04.hdf5',
-                                                       custom_objects=create_custom_objects())
-
-    test_data_dict = {'egy': r'./files/dataset/egy/data_4.test.conll',
-                      'mor': r'./files/dataset/mor/mdata_4.test.conll',
-                      'lev': r'./files/dataset/lev/lev_testfold_04.conll',
-                      'glf': r'./files/dataset/glf/glf_testfold_04.conll'}
-    fold01_joint_model.evaluate(test_data_dict)
-
-    print('\n\nFold 5 evaluation:')
-    fold01_joint_model = SegmentationModel()
-    fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.5',
-                                           r'files/dataset/joint/joint.dev.5')
-    fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold05.hdf5',
-                                                       custom_objects=create_custom_objects())
-
-    test_data_dict = {'egy': r'./files/dataset/egy/data_5.test.conll',
-                      'mor': r'./files/dataset/mor/mdata_5.test.conll',
-                      'lev': r'./files/dataset/lev/lev_testfold_05.conll',
-                      'glf': r'./files/dataset/glf/glf_testfold_05.conll'}
-    fold01_joint_model.evaluate(test_data_dict)
+    # print('\n\nFold 2 evaluation:')
+    # fold01_joint_model = SegmentationModel()
+    # fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.2',
+    #                                        r'files/dataset/joint/joint.dev.2')
+    # fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold02.hdf5',
+    #                                                    custom_objects=create_custom_objects())
+    #
+    # test_data_dict = {'egy': r'./files/dataset/egy/data_2.test.conll',
+    #                   'mor': r'./files/dataset/mor/mdata_2.test.conll',
+    #                   'lev': r'./files/dataset/lev/lev_testfold_02.conll',
+    #                   'glf': r'./files/dataset/glf/glf_testfold_02.conll'}
+    # fold01_joint_model.evaluate(test_data_dict)
+    #
+    # print('\n\nFold 3 evaluation:')
+    # fold01_joint_model = SegmentationModel()
+    # fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.3',
+    #                                        r'files/dataset/joint/joint.dev.3')
+    # fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold03.hdf5',
+    #                                                    custom_objects=create_custom_objects())
+    #
+    # test_data_dict = {'egy': r'./files/dataset/egy/data_3.test.conll',
+    #                   'mor': r'./files/dataset/mor/mdata_3.test.conll',
+    #                   'lev': r'./files/dataset/lev/lev_testfold_03.conll',
+    #                   'glf': r'./files/dataset/glf/glf_testfold_03.conll'}
+    # fold01_joint_model.evaluate(test_data_dict)
+    #
+    # print('\n\nFold 4 evaluation:')
+    # fold01_joint_model = SegmentationModel()
+    # fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.4',
+    #                                        r'files/dataset/joint/joint.dev.4')
+    # fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold04.hdf5',
+    #                                                    custom_objects=create_custom_objects())
+    #
+    # test_data_dict = {'egy': r'./files/dataset/egy/data_4.test.conll',
+    #                   'mor': r'./files/dataset/mor/mdata_4.test.conll',
+    #                   'lev': r'./files/dataset/lev/lev_testfold_04.conll',
+    #                   'glf': r'./files/dataset/glf/glf_testfold_04.conll'}
+    # fold01_joint_model.evaluate(test_data_dict)
+    #
+    # print('\n\nFold 5 evaluation:')
+    # fold01_joint_model = SegmentationModel()
+    # fold01_joint_model.load_dataset_splits(r'files/dataset/joint/joint.trian.5',
+    #                                        r'files/dataset/joint/joint.dev.5')
+    # fold01_joint_model.segmentation_model = load_model(r'files/models/joint.seg.fold05.hdf5',
+    #                                                    custom_objects=create_custom_objects())
+    #
+    # test_data_dict = {'egy': r'./files/dataset/egy/data_5.test.conll',
+    #                   'mor': r'./files/dataset/mor/mdata_5.test.conll',
+    #                   'lev': r'./files/dataset/lev/lev_testfold_05.conll',
+    #                   'glf': r'./files/dataset/glf/glf_testfold_05.conll'}
+    # fold01_joint_model.evaluate(test_data_dict)
 
 
 
