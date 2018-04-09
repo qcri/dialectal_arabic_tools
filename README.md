@@ -70,9 +70,9 @@ Younes Samih, Mohammed Attia, Mohamed Eldesouki, Ahmed Abdelali, Hamdy Mubarak, 
 You can ask questions and join the development discussion:
 
 - On the [Dialectal Arabic Tools Google group](https://groups.google.com/forum/#!forum/dat-users).
-- On the [Dialectal Arabic Tools Slack channel](https://datsteam.slack.com). Use [this link](https://dat-slack-autojoin.herokuapp.com/) to request an invitation to the channel.
+- On the [Dialectal Arabic Tools Slack channel](). Use [this link](https://dat-slack-autojoin.herokuapp.com/) to request an invitation to the channel.
 
-You can also post **bug reports and feature requests** (only) in [Github issues](https://github.com/fqcri/dialectal_arabic_tools/issues). Make sure to read [our guidelines](https://github.com/qcri/dialectal_arabic_tools/blob/master/CONTRIBUTING.md) first.
+You can also post **bug reports and feature requests** (only) in [Github issues](https://github.com/qcri/dialectal_arabic_tools/issues). Make sure to read [our guidelines](https://github.com/qcri/dialectal_arabic_tools/blob/master/CONTRIBUTING.md) first.
 
 
 ------------------
