@@ -40,8 +40,8 @@ Or download the compressed file of the project, extract it, change to the direct
 ## Getting started
 Dialectal Arabic Tools package is pretty easy to use. The following code snippets uses the dialectal segmention module to module a string of Arabic script encoded in ``UTF-8``,
 ```python
->>> from dialectal_arabic_tools import segmentation
->>> segmentation.segment_text(u"عنا تنتين بندورة جبلية وخمسة عروقة نعنع بيعملو سلطة .. شلوني معك؟")
+>>> from dialectal_arabic_tools.segmentation import segmenter
+>>> segmenter.segment_text(u"عنا تنتين بندورة جبلية وخمسة عروقة نعنع بيعملو سلطة .. شلوني معك؟")
 'عنا تنتين بندور+ة جبلي+ة و+خمس+ة عروق+ة نعنع ب+يعمل+و سلط+ة شلون+ي مع+ك ؟'
 ```
 
@@ -49,8 +49,8 @@ Furthermore, you could use the segmentation module to segment a text file of Ara
 The ``segment_file`` function requires two two positional parameters, namely the file to be segmented and a file name to generate the output in.
 
 ```python
->>> from dialectal_arabic_tools import segmentation
->>> segmentation.segment_file(r'/path/to/text/file/you/need/to/segment.txt', r'output/file/path.txt')
+>>> from dialectal_arabic_tools.segmentation import segmenter
+>>> segmenter.segment_file(r'/path/to/text/file/you/need/to/segment.txt', r'output/file/path.txt')
 ```
 
 
